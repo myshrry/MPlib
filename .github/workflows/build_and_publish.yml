@@ -6,6 +6,7 @@ on:
     tags: ['v*']
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -51,18 +52,6 @@ jobs:
           name: sdist
           path: dist/*
 
-  trigger-build-doc:
-    if: github.event_name == 'push'
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-    - name: Trigger ReadTheDocs build
-      uses: dfm/rtds-action@v1
-      with:
-        webhook_url: ${{ secrets.RTDS_WEBHOOK_URL }}
-        webhook_token: ${{ secrets.RTDS_WEBHOOK_TOKEN }}
-        commit_ref: ${{ github.ref }}
-
   nightly-release:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/')  # if a commit is pushed
     needs: [build, build-sdist]
@@ -86,21 +75,3 @@ jobs:
           body: 'MPlib development nightly release. This release is mainly for internal testing. Stable releases are published to pypi https://pypi.org/p/mplib/'
           files: |
             dist/*
-
-  publish-pypi:
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')  # if a tag is pushed
-    needs: [build, build-sdist]
-    runs-on: ubuntu-latest
-    environment: pypi_publish
-    permissions:
-      id-token: write  # mandatory for PyPI trusted publishing
-    steps:
-      - name: Download wheel artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: dist/
-          merge-multiple: true
-      - name: Publish distribution to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          packages-dir: dist/
