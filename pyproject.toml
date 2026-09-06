@@ -145,11 +145,6 @@ container-engine = { name = "docker", create-args = ["--rm"]}
 # That made the cibuildwheel test step fail and skip the wheel artifact upload.
 # Just smoke-test that the wheel imports cleanly with the resolved numpy instead.
 test-command = 'python -c "import mplib, numpy; print(mplib.__version__, numpy.__version__)"'
-# pillow 12.3.0 dropped cp310 wheels for the manylinux2014 (glibc 2.17) image,
-# so pip falls back to an sdist build that fails on missing jpeg headers.
-# Pre-install the newest pillow that still ships 2_17 wheels; it satisfies
-# the toppra -> matplotlib -> pillow chain so the wheel-install keeps it.
-test-requires = ["pillow<12.3"]
 test-skip = ["cp37-*", "cp38-*", "cp39-*", "cp311-*", "cp312-*"]
 
 [tool.cibuildwheel.linux]

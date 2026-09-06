@@ -24,11 +24,15 @@ jobs:
         uses: pypa/cibuildwheel@v2.16.4
         env:
           CIBW_BUILD: ${{ matrix.pyver }}-*
-          # The kolinguo/mplib-build image ships an old pip; recent PyPI
-          # metadata (e.g. toppra 0.6.10, 2026-08) breaks the old pip's
-          # wheel install in the test venv. Upgrade pip before the test
-          # environment installs the built wheel.
-          CIBW_BEFORE_TEST: pip install --upgrade pip
+          # The kolinguo/mplib-build image ships an old pip; upgrade it.
+          # Also pre-install a pillow that still has cp310 manylinux_2_17
+          # wheels BEFORE the wheel install: cibuildwheel only installs
+          # test-requires AFTER the wheel, but the wheel's own dependency
+          # resolution (toppra -> matplotlib -> pillow>=8) picks pillow
+          # 12.3.0, whose sdist fails to build in this old image (no jpeg
+          # headers). Pre-installing satisfies matplotlib so the wheel
+          # install keeps the existing pillow.
+          CIBW_BEFORE_TEST: 'pip install --upgrade pip && pip install "pillow<12.3"'
       - name: Upload wheel artifacts
         uses: actions/upload-artifact@v4
         with:
