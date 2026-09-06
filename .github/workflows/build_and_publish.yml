@@ -33,6 +33,10 @@ jobs:
           # headers). Pre-installing satisfies matplotlib so the wheel
           # install keeps the existing pillow.
           CIBW_BEFORE_TEST: 'pip install --upgrade pip && pip install "pillow<12.3"'
+          # aarch64 wheels build under QEMU emulation and take hours; the
+          # fork CI is only for x86_64 wheels. Upstream can keep the dual
+          # arch config.
+          CIBW_ARCHS: x86_64
       - name: Upload wheel artifacts
         uses: actions/upload-artifact@v4
         with:
