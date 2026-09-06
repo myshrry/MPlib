@@ -24,6 +24,11 @@ jobs:
         uses: pypa/cibuildwheel@v2.16.4
         env:
           CIBW_BUILD: ${{ matrix.pyver }}-*
+          # The kolinguo/mplib-build image ships an old pip; recent PyPI
+          # metadata (e.g. toppra 0.6.10, 2026-08) breaks the old pip's
+          # wheel install in the test venv. Upgrade pip before the test
+          # environment installs the built wheel.
+          CIBW_BEFORE_TEST: pip install --upgrade pip
       - name: Upload wheel artifacts
         uses: actions/upload-artifact@v4
         with:
